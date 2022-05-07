@@ -18,7 +18,8 @@ def main():
         return
     try:
         obs = combine_tables(obs_1, obs_2)
-        obs.drop(obs.columns[0], inplace=True, axis=1)
+        obs.sort_values(obs.columns[0], inplace=True)
+        obs = obs.set_index(obs.columns[0])
     except:
         print("An Error Has Occurred")
         return
@@ -29,7 +30,7 @@ def main():
         return
     try:
         initial_centroids = kmeanspp(obs, K)
-        print(initial_centroids.index.values)
+        print([int(x) for x in initial_centroids.index.values])
     except:
         print("An Error Has Occurred")
         return
