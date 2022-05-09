@@ -34,6 +34,16 @@ def main():
     except:
         print("An Error Has Occurred")
         return
+    try:
+        N = obs.shape[0]
+        dim = obs.shape[1]
+        final_centroids = C_function(N, K, max_iter, dim, eps, initial_centroids, obs) # TBC
+        assert final_centroids != None
+        return
+    except:
+        print("An Error Has Ocurred")
+        return
+
 
 '''
 The function check if the input is of the right length.
