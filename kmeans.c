@@ -60,20 +60,6 @@ static void free_matrix(double** mat, int rows) {
 }
 
 /*
-This function is used to free memory allocated for 2D PyObject arrays.
-The function assumes that the number of rows in the matrix is rows.
-*/
-static void free_python_matrix(PyObject** mat, int rows) {
-    int i;
-
-    for (i = 0; i < rows; i++)
-    {
-        free(mat[i]);
-    }
-    free(mat);
-}
-
-/*
 The function calculates the K cluster centroids produced by the K-means algorithm on the observations.
 The function receives the K points to serve as the centroids in the first iteration.
 The function then iterates, performing the following:
@@ -147,28 +133,24 @@ static double** read_from_python(int num_of_elements, int dim, PyObject *python_
             matrix[i][j] = PyFloat_AsDouble(element);
         }
     }
-    free(temp_list);
-    free(element);
     return matrix;
 }
 
 static PyObject* write_to_python(double** centroids, int K, int dim){
     int i, j;
-    PyObject** outer_list;
-    PyObject** inner_list;
-    PyObject* result;
-    outer_list = calloc(K, sizeof(PyObject*));
-    inner_list = calloc(dim, sizeof(PyObject*));
+    PyObject* outer_list;
+    PyObject* inner_list;
+    PyObject* element;
+    outer_list = PyList_New(K);
     for (i = 0; i < K; i++){
+        inner_list = PyList_New(dim);
         for (j = 0; j < dim; j++){
-            inner_list[j] = Py_BuildValue("d", centroids[i][j]);
+            element = PyFloat_FromDouble(centroids[i][j]);
+            PyList_SET_ITEM(inner_list, j, element);
         }
-        outer_list[i] = Py_BuildValue("[items]", inner_list);
+        PyList_SET_ITEM(outer_list, i, inner_list);
     }
-    result = Py_BuildValue("[items]", outer_list);
-    free_python_matrix(outer_list, K);
-    free_python_matrix(inner_list, dim);
-    return result;
+    return outer_list;
 }
 
 static PyObject* fit(PyObject *self, PyObject *args) {
@@ -183,8 +165,6 @@ static PyObject* fit(PyObject *self, PyObject *args) {
     }
     centroids = read_from_python(K, dim, centroid_list);
     observations = read_from_python(N, dim, observation_list);
-    free(centroid_list);
-    free(observation_list);
     if (calculate_kmeans(observations, centroids, N, dim, K, max_iter, eps) == 1)
     {
         free_matrix(observations, N);

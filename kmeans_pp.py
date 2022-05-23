@@ -1,7 +1,9 @@
 import sys
+from time import time
 import pandas as pd
 import numpy as np
 import mykmeanssp
+
 
 def main():
     # Call all functions below
@@ -20,26 +22,27 @@ def main():
     try:
         obs = combine_tables(obs_1, obs_2)
         obs.sort_values(obs.columns[0], inplace=True)
-        obs = obs.set_index(obs.columns[0])
+        obs.drop(obs.columns[0], inplace=True, axis=1)
+        N = obs.shape[0]
+        dim = obs.shape[1]
+        obs = obs.to_numpy()
     except:
         print("An Error Has Occurred")
         return
     try:
-        validate_input(K, max_iter, obs.shape[0])
+        validate_input(K, max_iter, N)
     except (AssertionError):
         print("Invalid Input!")
         return
     try:
-        initial_centroids = kmeanspp(obs, K)
-        print([int(x) for x in initial_centroids.index.values])
+        initial_centroids, initial_indices = kmeanspp(obs, K, N)
+        print(",".join(initial_indices))
     except:
         print("An Error Has Occurred")
         return
     try:
-        N = obs.shape[0]
-        dim = obs.shape[1]
         final_centroids = mykmeanssp.fit(N, K, max_iter, dim, eps, 
-        initial_centroids.values.tolist(), obs.values.tolist())
+        initial_centroids.tolist(), obs.tolist())
         assert final_centroids != None
         for centroid in final_centroids:
             print(",".join(["%.4f" % elem for elem in centroid]))
@@ -47,7 +50,7 @@ def main():
     except:
         print("An Error Has Ocurred")
         return
-
+    
 '''
 The function check if the input is of the right length.
 Then, the function checks whether K and max_iter (if provided) are valid integers,
@@ -95,18 +98,19 @@ The function checks if K and max_iter are of valid values.
 def validate_input(K, max_iter, N):
     assert 1<K<N and max_iter > 0
 
-def kmeanspp(obs, K):
+def kmeanspp(obs, K, N):
     np.random.seed(0)
-    n = obs.shape[0]
-    rand_index = np.random.choice(range(n))
-    centroids = obs.iloc[[rand_index]]
+    rand_index = np.random.choice(range(N))
+    indices = [str(rand_index)]
+    centroids = np.array([obs[rand_index]])
     for i in range(1, K):
-        distances = np.array([find_closest_distance(obs.iloc[[j]], centroids) for j in range(n)])
+        distances = np.array([find_closest_distance(obs[j], centroids) for j in range(N)])
         s = sum(distances)
         probs = distances / s
-        rand_index = np.random.choice(range(n), p=probs)
-        centroids = pd.concat([centroids, obs.iloc[[rand_index]]])
-    return centroids
+        rand_index = np.random.choice(range(N), p=probs)
+        indices.append(str(rand_index))
+        centroids = np.append(centroids, np.array([obs[rand_index]]), axis = 0)
+    return centroids, indices
 
 '''
 The function finds the distance of the closest centroid to x.
@@ -115,22 +119,10 @@ The function assumes the dimension of the centroids and of x is the same.
 The function uses the function square_euclidean_distance.
 '''
 def find_closest_distance(x, centroids):
-    minimal_distance = square_euclidean_distance(x, centroids.iloc[[0]])
-    for i in range(1, centroids.shape[0]): # Find the centroid that brings distance to minimum.
-        curr_distance = square_euclidean_distance(x, centroids.iloc[[i]])
-        if curr_distance < minimal_distance:
-            minimal_distance = curr_distance
+    minimal_distance = sum((x-centroids[0]) ** 2)
+    for i in range(1, len(centroids)):
+        minimal_distance = min(minimal_distance, sum((x-centroids[i]) ** 2))
     return minimal_distance
-
-'''
-The function returns the square of the euclidean distance between the two float dataframes.
-The function assumes the dimension of the dataframes is the same.
-'''
-def square_euclidean_distance(x, y):
-    s = 0
-    for i in range(x.shape[1]):
-        s += (x.iat[0, i] - y.iat[0, i]) ** 2
-    return s
 
 if __name__ == "__main__":
     main()
