@@ -172,7 +172,7 @@ static PyObject* write_to_python(double** centroids, int K, int dim){
 }
 
 static PyObject* fit(PyObject *self, PyObject *args) {
-    int N, K, max_iter, dim, i, j;
+    int N, K, max_iter, dim;
     double eps;
     PyObject *centroid_list, *observation_list, *result;
     double** centroids;
@@ -213,7 +213,7 @@ static struct PyModuleDef moduledef = {
 };
 
 PyMODINIT_FUNC
-PyInit_kmeanssp(void)
+PyInit_mykmeanssp(void)
 {
     PyObject *m;
     m = PyModule_Create(&moduledef);
