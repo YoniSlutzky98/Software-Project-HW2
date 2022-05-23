@@ -1,6 +1,7 @@
 import sys
 import pandas as pd
 import numpy as np
+import mykmeanssp
 
 def main():
     # Call all functions below
@@ -37,13 +38,15 @@ def main():
     try:
         N = obs.shape[0]
         dim = obs.shape[1]
-        final_centroids = C_function(N, K, max_iter, dim, eps, initial_centroids, obs) # TBC
+        final_centroids = mykmeanssp.fit(N, K, max_iter, dim, eps, 
+        initial_centroids.values.tolist(), obs.values.tolist())
         assert final_centroids != None
+        for centroid in final_centroids:
+            print(",".join(["%.4f" % elem for elem in centroid]))
         return
     except:
         print("An Error Has Ocurred")
         return
-
 
 '''
 The function check if the input is of the right length.
