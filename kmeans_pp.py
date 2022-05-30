@@ -22,6 +22,7 @@ def main():
     try:
         obs = combine_tables(obs_1, obs_2)
         obs.sort_values(obs.columns[0], inplace=True)
+        original_indices = obs.iloc[:,0].to_list()
         obs.drop(obs.columns[0], inplace=True, axis=1)
         N = obs.shape[0]
         dim = obs.shape[1]
@@ -35,7 +36,7 @@ def main():
         print("Invalid Input!")
         return
     try:
-        initial_centroids, initial_indices = kmeanspp(obs, K, N)
+        initial_centroids, initial_indices = kmeanspp(obs, K, N, original_indices)
         print(",".join(initial_indices))
     except:
         print("An Error Has Occurred")
@@ -98,17 +99,17 @@ The function checks if K and max_iter are of valid values.
 def validate_input(K, max_iter, N):
     assert 1<K<N and max_iter > 0
 
-def kmeanspp(obs, K, N):
+def kmeanspp(obs, K, N, original_indices):
     np.random.seed(0)
     rand_index = np.random.choice(range(N))
-    indices = [str(rand_index)]
+    indices = [str(int(original_indices[rand_index]))]
     centroids = np.array([obs[rand_index]])
     for i in range(1, K):
         distances = np.array([find_closest_distance(obs[j], centroids) for j in range(N)])
         s = sum(distances)
         probs = distances / s
         rand_index = np.random.choice(range(N), p=probs)
-        indices.append(str(rand_index))
+        indices.append(str(int(original_indices[rand_index])))
         centroids = np.append(centroids, np.array([obs[rand_index]]), axis = 0)
     return centroids, indices
 

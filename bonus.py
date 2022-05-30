@@ -22,15 +22,15 @@ def main():
         })
     plt.xlabel('K', fontdict={'size':14})
     plt.ylabel('Inertia', fontdict={'size':14})
+    plt.locator_params('x', nbins = 10)
     ax = plt.gca()
-    ax.plot(2, 150, 'o', ms=20, mec='black', mfc = 'none', mew = 3)
-    ax.annotate('Elbow Point', xy=(2, 150), xytext=(4, 250),
+    ax.plot(3, 90, 'o', ms=25, mec='black', mfc = 'none', mew = 3)
+    ax.annotate('Elbow Point', xy=(3, 80), xytext=(5, 190),
     color='black', size='large',arrowprops=dict(
       arrowstyle='simple,tail_width=0.3,head_width=0.8,head_length=0.8',
       facecolor='black', shrinkB=20)
     )
     plt.savefig('elbow.png')
-    plt.show()
 
 if __name__ == "__main__":
     main()
