@@ -1,4 +1,3 @@
-from turtle import color
 from sklearn import cluster
 from sklearn import datasets as ds
 import matplotlib.pyplot as plt
@@ -15,10 +14,10 @@ def main():
         ks.append(k)
     plt.plot(ks, inertions)
     plt.title('Elbow Method for Selection of Optimal "K" Clusters',
-     fontdict={'family': 'david',
+     fontdict={'family': 'DejaVu Sans',
         'color':  'brown',
         'weight': 'bold',
-        'size': 18,
+        'size': 14,
         })
     plt.xlabel('K', fontdict={'size':14})
     plt.ylabel('Inertia', fontdict={'size':14})
