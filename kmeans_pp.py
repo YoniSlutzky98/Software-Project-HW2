@@ -1,13 +1,9 @@
 import sys
-from time import time
 import pandas as pd
 import numpy as np
 import mykmeanssp
 
-
 def main():
-    # Call all functions below
-    # if AssertionError is raised - handle it!
     try:
         K, max_iter, eps, file_path_1, file_path_2 = receive_input()
     except (AssertionError):
@@ -20,13 +16,13 @@ def main():
         print("An Error Has Occurred")
         return
     try:
-        obs = combine_tables(obs_1, obs_2)
-        obs.sort_values(obs.columns[0], inplace=True)
-        original_indices = obs.iloc[:,0].to_list()
-        obs.drop(obs.columns[0], inplace=True, axis=1)
+        obs = combine_tables(obs_1, obs_2) # Inner join the input files
+        obs.sort_values(obs.columns[0], inplace=True) # Sort by the first column = indices
+        original_indices = obs.iloc[:,0].to_list() # Extract original indices
+        obs.drop(obs.columns[0], inplace=True, axis=1) # Remove indices from sorted merged df
         N = obs.shape[0]
         dim = obs.shape[1]
-        obs = obs.to_numpy()
+        obs = obs.to_numpy() # Convert df to np array for more efficient calculations.
     except:
         print("An Error Has Occurred")
         return
@@ -43,7 +39,7 @@ def main():
         return
     try:
         final_centroids = mykmeanssp.fit(N, K, max_iter, dim, eps, 
-        initial_centroids.tolist(), obs.tolist())
+        initial_centroids.tolist(), obs.tolist()) # Call C function
         assert final_centroids != None
         for centroid in final_centroids:
             print(",".join(["%.4f" % elem for elem in centroid]))
@@ -53,7 +49,7 @@ def main():
         return
     
 '''
-The function check if the input is of the right length.
+The function checks if the input is of the right length.
 Then, the function checks whether K and max_iter (if provided) are valid integers,
 and whether eps is a valid float.
 '''
@@ -80,8 +76,7 @@ def receive_input():
     return K, max_iter, eps, file_path_1, file_path_2
 
 '''
-The function reads the input file.
-The function returns a float matrix whose elements are that of the input file.
+The function reads the input file as a dataframe.
 '''
 def read_file(file_path):
     return pd.read_csv(file_path, header=None)
@@ -99,10 +94,15 @@ The function checks if K and max_iter are of valid values.
 def validate_input(K, max_iter, N):
     assert 1<K<N and max_iter > 0
 
+'''
+The function implements the kmeans++ algorithm.
+The function uses weights to randomly choose the first K centroids from the observations.
+The weights are assigned with regards to the euclidean distance from current centroids.
+'''
 def kmeanspp(obs, K, N, original_indices):
     np.random.seed(0)
     rand_index = np.random.choice(range(N))
-    indices = [str(int(original_indices[rand_index]))]
+    indices = [str(int(original_indices[rand_index]))] # Keeping track of original indices
     centroids = np.array([obs[rand_index]])
     for i in range(1, K):
         distances = np.array([find_closest_distance(obs[j], centroids) for j in range(N)])
@@ -117,7 +117,6 @@ def kmeanspp(obs, K, N, original_indices):
 The function finds the distance of the closest centroid to x.
 The distance is measured using the euclidean distance.
 The function assumes the dimension of the centroids and of x is the same.
-The function uses the function square_euclidean_distance.
 '''
 def find_closest_distance(x, centroids):
     minimal_distance = sum((x-centroids[0]) ** 2)

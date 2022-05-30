@@ -1,6 +1,6 @@
 /*
 Assignment 2 - Software Project
-In this assignment we were asked to implement a k-means++ algorithm in python with a C extension.
+In this assignment we implement the k-means++ algorithm in python with a C extension.
 provided here is the C extension implementation.
 */
 #define PY_SSIZE_T_CLEAN
@@ -120,6 +120,11 @@ static int calculate_kmeans(double** obs, double** centroids, int N, int dim, in
     return 0;
 }
 
+/*
+The function receives a Python list of float vectors.
+The function returns an equivalent double C matrix.
+The assumed number of elements is num_of_elements, and the assumed dimension is dim.
+*/
 static double** read_from_python(int num_of_elements, int dim, PyObject *python_list){
     int i, j;
     double **matrix;
@@ -136,6 +141,11 @@ static double** read_from_python(int num_of_elements, int dim, PyObject *python_
     return matrix;
 }
 
+/*
+The function receives a C array of double vectors.
+The function returns an equivalent float Python matrix.
+The assumed number of elements is k, and the assumed dimension is dim.
+*/
 static PyObject* write_to_python(double** centroids, int K, int dim){
     int i, j;
     PyObject* outer_list;
@@ -153,6 +163,14 @@ static PyObject* write_to_python(double** centroids, int K, int dim){
     return outer_list;
 }
 
+/*
+The function receives the following arguments needed for the kmeans algorithm:
+N - num of observations, K - num of centroids, max_iter, dim - dimension of observations,
+eps - convergence bound, centroid_list - first centroids (randomly calculatd in Python),
+observation_list - observations.
+The function converts the required data to be usable in C, applies the kmeans algorithm, 
+converts the results back to be usable in python and returns them.
+*/
 static PyObject* fit(PyObject *self, PyObject *args) {
     int N, K, max_iter, dim;
     double eps;
@@ -179,6 +197,9 @@ static PyObject* fit(PyObject *self, PyObject *args) {
     }
 }
 
+/*
+Python module setup
+*/
 static PyMethodDef capiMethods[] = {
     {"fit", (PyCFunction) fit, METH_VARARGS, NULL},
     {NULL, NULL, 0, NULL}
